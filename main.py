@@ -4,21 +4,35 @@ import paddle
 from paddlenlp.transformers import LinearDecayWithWarmup
 from paddlenlp.metrics import ChunkEvaluator
 from paddlenlp.datasets import load_dataset
-from paddlenlp.transformers import BertForTokenClassification, BertTokenizer
+from paddlenlp.transformers import BertForTokenClassification
 
 from src import dataset
 from src import parameter
 
+import src.cluener_dataset as cluener
+from paddlenlp.datasets import MapDataset
 
-#bert token
-tokenizer = BertTokenizer.from_pretrained(parameter.pretrained)
 #加载数据集
-train_ds, test_ds = load_dataset("msra_ner", splits=["train", "test"])
+if parameter.dataset == "msra_ner":
+    print(1)
+    train_ds, test_ds = load_dataset("msra_ner", splits=["train", "test"])
+elif parameter.dataset == "peoples_daily_ner":
+    print(2)
+    train_ds, test_ds = load_dataset('peoples_daily_ner', splits=["train","dev"])
+elif parameter.dataset == "cluener":
+    print(3)
+    train_ds,test_ds = cluener.CluenerDataset(parameter.cluener_path,"train"),cluener.CluenerDataset(parameter.cluener_path,"dev")
+    train_ds = MapDataset(train_ds)
+    test_ds = MapDataset(test_ds)
+else:
+    print("请输入正确的数据集名！")
+    exit(0)
+    
 #标签名
-label_list = train_ds.label_list  
+label_list = cluener.label_list  
 #dataloader
-train_loader,test_loader = dataset.make_dataloader(train_ds,test_ds,label_list,tokenizer)
-
+train_loader = dataset.create_dataloader(train_ds)
+test_loader = dataset.create_dataloader(test_ds)
 
 
 # Define the model netword and its loss
@@ -37,7 +51,6 @@ output_dir = parameter.output_dir
 model = BertForTokenClassification.from_pretrained(parameter.pretrained, num_classes=len(label_list))
 
 
-
 num_training_steps = max_steps if max_steps > 0 else len(train_loader) * num_train_epochs
 
 lr_scheduler = LinearDecayWithWarmup(learning_rate, num_training_steps, warmup_steps)
@@ -49,12 +62,14 @@ decay_params = [
     if not any(nd in n for nd in ["bias", "norm"])
 ]
 
+
 optimizer = paddle.optimizer.AdamW(
     learning_rate=lr_scheduler,
     epsilon=1e-8,
     parameters=model.parameters(),
     weight_decay=0.0,
     apply_decay_param_fun=lambda x: x in decay_params)
+
 
 loss_fct = paddle.nn.loss.CrossEntropyLoss(ignore_index=parameter.ignore_label)
 metric = ChunkEvaluator(label_list=label_list)
@@ -88,12 +103,10 @@ def evaluate(model, loss_fct, metric, data_loader, label_num):
 last_step = num_train_epochs * len(train_loader)
 tic_train = time.time()
 
-
 for epoch in range(num_train_epochs):
     for step, batch in enumerate(train_loader):
         global_step += 1
         input_ids, token_type_ids, _, labels = batch
-        token_type_ids = token_type_ids.astype("int64")
         logits = model(input_ids, token_type_ids)
         loss = loss_fct(logits, labels)
         avg_loss = paddle.mean(loss)
@@ -112,12 +125,17 @@ for epoch in range(num_train_epochs):
         lr_scheduler.step()
         optimizer.clear_grad()
         
+        #保存模型
         if global_step % save_steps == 0 or global_step == last_step:
             if paddle.distributed.get_rank() == 0:
                 evaluate(model, loss_fct, metric, test_loader,len(label_list))
                 paddle.save(model.state_dict(),
                             os.path.join(output_dir,
                                             "model_%d.pdparams" % global_step))
+                
+paddle.save(model.state_dict(),
+            os.path.join(output_dir,
+                            "model_%d.pdparams" % global_step))
 
 
 

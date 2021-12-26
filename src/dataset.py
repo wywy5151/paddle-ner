@@ -1,37 +1,23 @@
-
-import os
-import json
 import paddle
 from functools import partial
 from paddle.io import DataLoader
-
-
-from paddlenlp.datasets import load_dataset
-from paddlenlp.transformers import BertTokenizer
 from paddlenlp.data import Stack, Pad, Dict
+from paddlenlp.transformers import BertTokenizer
 
- 
-from src import parameter
 
-base = parameter.base
+try:
+    from src import parameter
+except:
+    import parameter
 
-def load_data(name):
-    with open(os.path.join(base,name),encoding="utf-8") as f:
-        data = []
-        line = f.readline()
-        while line:
-            data.append(json.loads(line))
-            line = f.readline()
-    return data
-    
-#加载cluener数据集
-def load_cluener(base="D:/yunpan/数据集/cluener_public"):
-    train = load_data("train.json")
-    test = load_data("test.json")
-    dev = load_data("dev.json")
-    return train,test,dev
+tokenizer = BertTokenizer.from_pretrained(parameter.pretrained)   
+ignore_label = parameter.ignore_label
+no_entity_id = parameter.no_entity_id
 
+
+# 将文本转成 paddlenlp bert token
 def tokenize_and_align_labels(example, tokenizer, no_entity_id,max_seq_len=512):
+    
     labels = example['labels']
     example = example['tokens']
     tokenized_input = tokenizer(
@@ -40,70 +26,68 @@ def tokenize_and_align_labels(example, tokenizer, no_entity_id,max_seq_len=512):
         is_split_into_words=True,
         max_seq_len=max_seq_len)
 
-    # -2 for [CLS] and [SEP]
+    # -2 for [CLS] and [SEP] 剔除
     if len(tokenized_input['input_ids']) - 2 < len(labels):
         labels = labels[:len(tokenized_input['input_ids']) - 2]
     tokenized_input['labels'] = [no_entity_id] + labels + [no_entity_id]
-    tokenized_input['labels'] += [no_entity_id] * (
-        len(tokenized_input['input_ids']) - len(tokenized_input['labels']))
+    tokenized_input['labels'] += [no_entity_id] * (len(tokenized_input['input_ids']) - len(tokenized_input['labels']))
+    
     return tokenized_input
 
 
-def make_dataloader(train_ds,test_ds,label_list,tokenizer):
-    
-    label_num = len(label_list)       #标签数
-    no_entity_id = label_num - 1       
+#初始化一些默认参数
+trans_func = partial(
+    tokenize_and_align_labels,
+    tokenizer=tokenizer,
+    no_entity_id=no_entity_id,
+    max_seq_len=parameter.max_seq_len) 
 
-    trans_func = partial(
-        tokenize_and_align_labels,
-        tokenizer=tokenizer,
-        no_entity_id=no_entity_id,
-        max_seq_len=parameter.max_seq_len)
 
-    train_ds = train_ds.map(trans_func)
-    ignore_label = parameter.ignore_label
+#对序列进行预处理
+batchify_fn = lambda samples, fn=Dict({
+    'input_ids': Pad(dtype="int64",axis=0, pad_val=tokenizer.pad_token_id),            # input
+    'token_type_ids': Pad(dtype="int64",axis=0, pad_val=tokenizer.pad_token_type_id),  # segment
+    'seq_len': Stack(dtype="int64"),  # seq_len
+    'labels': Pad(dtype="int64",axis=0, pad_val=ignore_label)                          # label
+}): fn(samples)
 
-    batchify_fn = lambda samples, fn=Dict({
-        'input_ids': Pad(dtype="int64",axis=0, pad_val=tokenizer.pad_token_id),  # input
-        'token_type_ids': Pad(dtype="int64",axis=0, pad_val=tokenizer.pad_token_type_id),  # segment
-        'seq_len': Stack(dtype="int64"),  # seq_len
-        'labels': Pad(dtype="int64",axis=0, pad_val=ignore_label)  # label
-    }): fn(samples)
 
-    train_batch_sampler = paddle.io.DistributedBatchSampler(
-        train_ds, batch_size=parameter.train_batch_size, shuffle=True, drop_last=True)
+def create_dataloader(ds):
+    #文本转token
+    ds = ds.map(trans_func)
+    #配置数据集加载参数
+    batch_sampler = paddle.io.DistributedBatchSampler(ds, batch_size=parameter.train_batch_size, shuffle=True, drop_last=True)
     
     #训练集加载器
-    train_data_loader = DataLoader(
-        dataset=train_ds,
+    data_loader = DataLoader(
+        dataset=ds,
         collate_fn=batchify_fn,
         num_workers=0,
-        batch_sampler=train_batch_sampler,
+        batch_sampler=batch_sampler,
         return_list=True)
 
-    #测试集加载器
-    test_ds = test_ds.map(trans_func)
-    test_data_loader = DataLoader(
-            dataset=test_ds,
-            collate_fn=batchify_fn,
-            num_workers=0,
-            batch_size=parameter.test_batch_size,
-            return_list=True)
+    return data_loader
+
+
+#############################################################################
+#预测，处理函数
+#输入为一段文本
+
+def transform(texts):
+    input_ids = []
+    token_type_ids = []
     
-    return train_data_loader,test_data_loader
-
-
-
-if __name__ == "__main__":
+    for text in texts:
+        tokenized_input = tokenizer(
+            text,
+            return_length=False,
+            is_split_into_words=True,
+            max_seq_len=parameter.max_seq_len)
+        
+        input_ids.append(tokenized_input["input_ids"])
+        token_type_ids.append(tokenized_input["token_type_ids"])
     
-    tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-uncased')
-    label_list = []
-    cluener_label = {"address":"地址","book":"书名","company":"公司","game":"游戏","government":"政府","movie":"电影","name":"姓名","organization":"组织机构","position":"职位","scene":"景点"}
-
-    msra_train,msra_test = load_dataset("msra_ner", splits=["train", "test"])
-    people_train,people_test,people_dev = load_dataset('peoples_daily_ner', splits=["train", "test","dev"])
-    cluener_train,cluener_test,cluener_dev = load_cluener(base)
-    
-    
-
-
+    return input_ids,token_type_ids
+        
+        
+        
