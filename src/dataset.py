@@ -72,13 +72,50 @@ def create_dataloader(ds):
 #############################################################################
 #预测，处理函数
 #输入为一段文本
+def tokenize_texts(text, tokenizer, no_entity_id,max_seq_len=512):
+    
+    example = text
+    tokenized_input = tokenizer(
+        example,
+        return_length=True,
+        is_split_into_words=True,
+        max_seq_len=max_seq_len)
+
+   
+    tokenized_input['labels'] += [no_entity_id] * (len(tokenized_input['input_ids']) - len(tokenized_input['labels']))
+    
+    return tokenized_input
+
+def check_text_size(text,max_seq_len):
+    
+    split = []
+    if len(text)<=max_seq_len:
+        split = [text]
+    else:
+        count = len(text)//max_seq_len
+        for i in range(count+1):
+            split.append(text[i*max_seq_len:i*max_seq_len+max_seq_len])
+    
+    if not split[-1]:
+        split = split[:-1]
+        
+    return split
 
 def transform(texts):
+    """
+    如果文本长度大于parameter.max_seq_len
+    则，切分文本到
+
+    """
     input_ids = []
     token_type_ids = []
     seq_len = []
     
-    for text in texts:
+    split_texts = []
+    for t in texts:
+        split_texts += check_text_size(t,parameter.max_seq_len-2)
+
+    for text in split_texts:
         tokenized_input = tokenizer(
             text,
             return_length=True,
@@ -90,16 +127,20 @@ def transform(texts):
         seq_len.append(tokenized_input["seq_len"])
     
     maxlen = max(seq_len)
-    maxlen = parameter.max_seq_len
-    
+   
     inputs = []
     types = []
-    for i in range(len(texts)):
+    for i in range(len(split_texts)):
         inputs.append(input_ids[i]+[0]*(maxlen-seq_len[i]))
         types.append(token_type_ids[i]+[0]*(maxlen-seq_len[i]))
         
     
-    return inputs,types,seq_len
+    return inputs,types,seq_len,split_texts
+
+
+        
+
+
         
         
         

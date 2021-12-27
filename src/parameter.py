@@ -16,10 +16,10 @@ save_steps = 5000
 
 
 #数据集
-dataset = "cluener"  #msra_ner,peoples_daily_ner,cluener
+dataset = "msra_ner"  #msra_ner,peoples_daily_ner,cluener
 ignore_label = -100
-no_entity_id = 20  #“O” 在label_list的index,msra_ner:6 peoples_daily_ner:6 cluener:20  
-num_classes=21  #num_classes=len(label_list),msra_ner:7 peoples_daily_ner:7 cluener:21  
+no_entity_id = 6  #“O” 在label_list的index,msra_ner:6 peoples_daily_ner:6 cluener:20  
+num_classes=7  #num_classes=len(label_list),msra_ner:7 peoples_daily_ner:7 cluener:21  
 
 #设置最长序列
 max_seq_len=128
@@ -34,16 +34,9 @@ cluener_label = {"address":"地址","book":"书名","company":"公司","game":"�
 #cluener数据集路径
 cluener_path = "D:/yunpan/数据集/cluener_public"
 
-
-
-
-
-
-
-
-
-
-
-
+#label list
 cluener_label_list = ['B-address', 'I-address', 'B-book', 'I-book', 'B-company', 'I-company', 'B-game', 'I-game', 'B-government', 'I-government', 'B-movie', 'I-movie', 'B-name', 'I-name', 'B-organization', 'I-organization', 'B-position', 'I-position', 'B-scene', 'I-scene', 'O']
 msra_label_list = ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'O']
+peoples_daily_label_list = ['B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'O']
+
+

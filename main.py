@@ -16,20 +16,22 @@ from paddlenlp.datasets import MapDataset
 if parameter.dataset == "msra_ner":
     print(1)
     train_ds, test_ds = load_dataset("msra_ner", splits=["train", "test"])
+    label_list = parameter.msra_label_list
 elif parameter.dataset == "peoples_daily_ner":
     print(2)
     train_ds, test_ds = load_dataset('peoples_daily_ner', splits=["train","dev"])
+    label_list = parameter.peoples_daily_label_list
 elif parameter.dataset == "cluener":
     print(3)
     train_ds,test_ds = cluener.CluenerDataset(parameter.cluener_path,"train"),cluener.CluenerDataset(parameter.cluener_path,"dev")
     train_ds = MapDataset(list(train_ds))
     test_ds = MapDataset(list(test_ds))
+    label_list = cluener.label_list  
 else:
     print("请输入正确的数据集名！")
     exit(0)
     
-#标签名
-label_list = cluener.label_list  
+
 #dataloader
 train_loader = dataset.create_dataloader(train_ds)
 test_loader = dataset.create_dataloader(test_ds)
@@ -49,7 +51,6 @@ output_dir = parameter.output_dir
 
 #加载预训练模型
 model = BertForTokenClassification.from_pretrained(parameter.pretrained, num_classes=len(label_list))
-
 
 num_training_steps = max_steps if max_steps > 0 else len(train_loader) * num_train_epochs
 
@@ -110,6 +111,9 @@ for epoch in range(num_train_epochs):
         logits = model(input_ids, token_type_ids)
         loss = loss_fct(logits, labels)
         avg_loss = paddle.mean(loss)
+        
+        raise
+        
         
         if global_step % logging_steps == 0:
             print(
