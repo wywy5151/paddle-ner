@@ -22,8 +22,8 @@ elif parameter.dataset == "peoples_daily_ner":
 elif parameter.dataset == "cluener":
     print(3)
     train_ds,test_ds = cluener.CluenerDataset(parameter.cluener_path,"train"),cluener.CluenerDataset(parameter.cluener_path,"dev")
-    train_ds = MapDataset(train_ds)
-    test_ds = MapDataset(test_ds)
+    train_ds = MapDataset(list(train_ds))
+    test_ds = MapDataset(list(test_ds))
 else:
     print("请输入正确的数据集名！")
     exit(0)

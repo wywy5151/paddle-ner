@@ -76,18 +76,30 @@ def create_dataloader(ds):
 def transform(texts):
     input_ids = []
     token_type_ids = []
+    seq_len = []
     
     for text in texts:
         tokenized_input = tokenizer(
             text,
-            return_length=False,
+            return_length=True,
             is_split_into_words=True,
             max_seq_len=parameter.max_seq_len)
         
         input_ids.append(tokenized_input["input_ids"])
         token_type_ids.append(tokenized_input["token_type_ids"])
+        seq_len.append(tokenized_input["seq_len"])
     
-    return input_ids,token_type_ids
+    maxlen = max(seq_len)
+    maxlen = parameter.max_seq_len
+    
+    inputs = []
+    types = []
+    for i in range(len(texts)):
+        inputs.append(input_ids[i]+[0]*(maxlen-seq_len[i]))
+        types.append(token_type_ids[i]+[0]*(maxlen-seq_len[i]))
+        
+    
+    return inputs,types,seq_len
         
         
         

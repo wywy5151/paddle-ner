@@ -22,7 +22,7 @@ path = parameter.cluener_path
 
 
 #加载文件数据
-def load_data(name):
+def load_data(path,name):
     with open(os.path.join(path,name),encoding="utf-8") as f:
         data = []
         line = f.readline()
@@ -49,11 +49,11 @@ def targeLabel(item):
 
 
 #加载cluener数据集
-def load_cluener(base):
+def load_cluener(path):
     
-    train = load_data("train.json")
-    test = load_data("test.json")
-    dev = load_data("dev.json")
+    train = load_data(path,"train.json")
+    test = load_data(path,"test.json")
+    dev = load_data(path,"dev.json")
     
     train = [targeLabel(item) for item in train]
     dev = [targeLabel(item) for item in dev]
@@ -69,7 +69,7 @@ class CluenerDataset(Dataset):
         self.datatype = datatype
         
         self.label_list = label_list
-        print(label_list)
+        #print(label_list)
         self.id2label = dict(enumerate(self.label_list))
         self.label2id = dict(zip(self.label_list,range(len(self.label_list))))
 
@@ -89,11 +89,13 @@ class CluenerDataset(Dataset):
         if self.datatype=="train":
             return len(self.train)
         elif self.datatype=="dev":
-            return len(self.dev)
+            return len(self.dev)-1
         else:
-            return len(self.test)
+            return len(self.test)-1
 
 
+a = CluenerDataset(parameter.cluener_path)
+b = a.__getitem__(9387)
 
 
 
