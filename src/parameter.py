@@ -1,6 +1,9 @@
 
 #预训练模型
-pretrained = "bert-wwm-ext-chinese"  # bert-base-multilingual-uncased  其他预训练模型可参考：https://paddlenlp.readthedocs.io/zh/latest/model_zoo/transformers.html#transformer
+pretrained = "bert-wwm-ext-chinese"            # bert-base-multilingual-uncased  其他预训练模型可参考：https://paddlenlp.readthedocs.io/zh/latest/model_zoo/transformers.html#transformer
+pretrained = "bert-base-multilingual-uncased"
+
+
 #模型输出路径
 output_dir = 'cluener'
 
