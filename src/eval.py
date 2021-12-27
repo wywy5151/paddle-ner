@@ -30,6 +30,10 @@ elif parameter.dataset == "cluener":
     print(3)
     train_ds,test_ds = cluener.CluenerDataset(parameter.cluener_path,"train"),cluener.CluenerDataset(parameter.cluener_path,"dev")
     train_ds = MapDataset(list(train_ds))
+    
+    test_ds = list(test_ds)
+    max_seq_len = max([len(i["tokens"]) for i in test_ds])
+    
     test_ds = MapDataset(list(test_ds))
     label_list = cluener.label_list  
 else:

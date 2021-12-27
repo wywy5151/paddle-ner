@@ -113,7 +113,6 @@ for epoch in range(num_train_epochs):
         avg_loss = paddle.mean(loss)
         
         
-        
         if global_step % logging_steps == 0:
             print(
                 "global step %d, epoch: %d, batch: %d, loss: %f, speed: %.2f step/s"
@@ -127,6 +126,7 @@ for epoch in range(num_train_epochs):
         optimizer.step()
         lr_scheduler.step()
         optimizer.clear_grad()
+        
         
         #保存模型
         if global_step % save_steps == 0 or global_step == last_step:

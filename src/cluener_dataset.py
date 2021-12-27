@@ -94,14 +94,6 @@ class CluenerDataset(Dataset):
             return len(self.test)-1
 
 
-a = CluenerDataset(parameter.cluener_path)
-b = a.__getitem__(9387)
-
-
-
-
-            
-        
         
         
         

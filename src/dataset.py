@@ -10,6 +10,7 @@ try:
 except:
     import parameter
 
+
 tokenizer = BertTokenizer.from_pretrained(parameter.pretrained)   
 ignore_label = parameter.ignore_label
 no_entity_id = parameter.no_entity_id
@@ -70,21 +71,6 @@ def create_dataloader(ds):
 
 
 #############################################################################
-#预测，处理函数
-#输入为一段文本
-def tokenize_texts(text, tokenizer, no_entity_id,max_seq_len=512):
-    
-    example = text
-    tokenized_input = tokenizer(
-        example,
-        return_length=True,
-        is_split_into_words=True,
-        max_seq_len=max_seq_len)
-
-   
-    tokenized_input['labels'] += [no_entity_id] * (len(tokenized_input['input_ids']) - len(tokenized_input['labels']))
-    
-    return tokenized_input
 
 def check_text_size(text,max_seq_len):
     

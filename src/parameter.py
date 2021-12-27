@@ -19,7 +19,7 @@ save_steps = 10000
 
 
 #数据集
-dataset = "msra_ner"  #msra_ner,peoples_daily_ner,cluener
+dataset = "cluener"  #msra_ner,peoples_daily_ner,cluener
 ignore_label = -100
 no_entity_id = 6  #“O” 在label_list的index,msra_ner:6 peoples_daily_ner:6 cluener:20  
 num_classes=7     #num_classes=len(label_list),msra_ner:7 peoples_daily_ner:7 cluener:21  
@@ -29,7 +29,6 @@ max_seq_len=128
 train_batch_size=8
 #测试集 batch_size
 test_batch_size=32
-
 
 
 #cluener 标签
