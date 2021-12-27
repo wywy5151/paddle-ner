@@ -14,48 +14,27 @@ except:
     import parameter
     import cluener_dataset as cluener
 
-from paddlenlp.datasets import MapDataset
-
-max_steps = parameter.max_steps
-num_train_epochs = parameter.num_train_epochs
-learning_rate = parameter.learning_rate
-warmup_steps = parameter.warmup_steps 
 
 
-global_step = parameter.global_step
-logging_steps = parameter.logging_steps
-save_steps = parameter.save_steps
-output_dir = parameter.output_dir
-
-train_ds,test_ds = cluener.CluenerDataset(parameter.cluener_path,"train"),cluener.CluenerDataset(parameter.cluener_path,"dev")
-train_ds = MapDataset(list(train_ds))
-test_ds = MapDataset(list(test_ds))
-
-label_list = cluener.label_list  
-#dataloader
-train_loader = dataset.create_dataloader(train_ds)
-test_loader = dataset.create_dataloader(test_ds)
+loss_fct = paddle.nn.loss.CrossEntropyLoss(ignore_index=parameter.ignore_label)
+metric = ChunkEvaluator(label_list=label_list)
 
 
-from tqdm import tqdm
-for epoch in range(num_train_epochs):
-    for step, batch in tqdm(enumerate(train_loader)):
-        global_step += 1
-        print("epoch=",epoch," global_step=",global_step)
-        input_ids, token_type_ids, _, labels = batch
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+def evaluate(model, loss_fct, metric, data_loader, label_num):
+    model.eval()
+    metric.reset()
+    avg_loss, precision, recall, f1_score = 0, 0, 0, 0
+    for batch in data_loader:
+        input_ids, token_type_ids, length, labels = batch
+        logits = model(input_ids, token_type_ids)
+        loss = loss_fct(logits, labels)
+        avg_loss = paddle.mean(loss)
+        preds = logits.argmax(axis=2)
+        num_infer_chunks, num_label_chunks, num_correct_chunks = metric.compute(
+            None, length, preds, labels)
+        metric.update(num_infer_chunks.numpy(),
+                      num_label_chunks.numpy(), num_correct_chunks.numpy())
+        precision, recall, f1_score = metric.accumulate()
+    print("eval loss: %f, precision: %f, recall: %f, f1: %f" %
+          (avg_loss, precision, recall, f1_score))
+    model.train()

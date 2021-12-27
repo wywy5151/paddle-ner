@@ -112,7 +112,6 @@ for epoch in range(num_train_epochs):
         loss = loss_fct(logits, labels)
         avg_loss = paddle.mean(loss)
         
-        raise
         
         
         if global_step % logging_steps == 0:
