@@ -6,16 +6,27 @@ from paddlenlp.transformers import BertForTokenClassification
 try:
     from src import parameter
     from src import dataset
+    import src.cluener_dataset as cluener
 except:
     import parameter
     import dataset
+    import cluener_dataset as cluener
 
 if parameter.dataset == "msra_ner":
+    print(1)
+    test_ds = load_dataset("msra_ner", splits=["test"])
     label_list = parameter.msra_label_list
 elif parameter.dataset == "peoples_daily_ner":
+    print(2)
+    test_ds = load_dataset('peoples_daily_ner', splits=["dev"])
     label_list = parameter.peoples_daily_label_list
+elif parameter.dataset == "cluener":
+    print(3)
+    test_ds = cluener.CluenerDataset(parameter.cluener_path,"dev")
+    label_list = cluener.label_list  
 else:
-    label_list = parameter.cluener_label_list
+    print("请输入正确的数据集名！")
+    exit(0)
     
     
 id2label = dict(enumerate(label_list))
@@ -78,8 +89,6 @@ if __name__ == "__main__":
     checkpoint["cluener"] = parameter.cluener_checkpoint
     
     model = load_model(checkpoint[parameter.dataset])
-    
-    train_ds, test_ds = load_dataset("msra_ner", splits=["train", "test"])
     
     #原始文本
     texts = ["".join(test_ds[i+10]["tokens"]) for i in range(10)]
