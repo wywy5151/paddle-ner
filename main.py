@@ -12,6 +12,7 @@ from src import parameter
 import src.cluener_dataset as cluener
 from paddlenlp.datasets import MapDataset
 
+
 #加载数据集
 if parameter.dataset == "msra_ner":
     print(1)
