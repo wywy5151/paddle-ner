@@ -69,9 +69,9 @@ def evaluate(model, loss_fct, metric, data_loader, label_num):
 if __name__ == "__main__":
     
     checkpoint = {}
-    checkpoint["msra_ner"] = "D:/yunpan/checkpoint/msra_model_22000.pdparams"
-    checkpoint["peoples_daily_ner"] = "D:/yunpan/checkpoint/peoples_daily_model_26080.pdparams"
-    checkpoint["cluener"] = "D:/yunpan/checkpoint/cluener_model_134300.pdparams"
+    checkpoint["msra_ner"] = parameter.msra_ner_checkpoint
+    checkpoint["peoples_daily_ner"] = parameter.peoples_daily_ner_checkpoint
+    checkpoint["cluener"] = parameter.cluener_checkpoint
     
     test_loader = dataset.create_dataloader(test_ds)
     model = predict.load_model(checkpoint[parameter.dataset])

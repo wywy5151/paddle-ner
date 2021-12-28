@@ -10,8 +10,14 @@ except:
     import parameter
     import dataset
 
-
-label_list = parameter.msra_label_list
+if parameter.dataset == "msra_ner":
+    label_list = parameter.msra_label_list
+elif parameter.dataset == "peoples_daily_ner":
+    label_list = parameter.peoples_daily_label_list
+else:
+    label_list = parameter.cluener_label_list
+    
+    
 id2label = dict(enumerate(label_list))
 label2id = dict(zip(label_list,range(len(label_list))))
 
@@ -65,11 +71,18 @@ def parse(outputs,seq_len,texts):
                     
                 
 if __name__ == "__main__":
-    model = load_model("D:/yunpan/checkpoint/model_22000.pdparams")
     
-    train_ds, test_ds = load_dataset("peoples_daily_ner", splits=["train", "test"])
-    texts = ["".join(test_ds.__getitem__(i)["tokens"]) for i in range(10)]
+    checkpoint = {}
+    checkpoint["msra_ner"] = parameter.msra_ner_checkpoint
+    checkpoint["peoples_daily_ner"] = parameter.peoples_daily_ner_checkpoint
+    checkpoint["cluener"] = parameter.cluener_checkpoint
     
+    model = load_model(checkpoint[parameter.dataset])
+    
+    train_ds, test_ds = load_dataset("msra_ner", splits=["train", "test"])
+    
+    #原始文本
+    texts = ["".join(test_ds[i+10]["tokens"]) for i in range(10)]
     
     preds,seq_len,texts = predict(texts,model)
     results = parse(preds,seq_len,texts)

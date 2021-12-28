@@ -5,8 +5,7 @@ pretrained = "bert-base-multilingual-uncased"
 
 
 #模型输出路径
-output_dir = 'cluener'
-
+output_dir = 'msra_ner'
 
 # Define the model netword and its loss
 max_steps = -1
@@ -21,7 +20,7 @@ save_steps = 10000
 #数据集
 dataset = "cluener"  #msra_ner,peoples_daily_ner,cluener
 ignore_label = -100
-no_entity_id = 20  #“O” 在label_list的index,msra_ner:6 peoples_daily_ner:6 cluener:20  
+no_entity_id = 20    #“O” 在label_list的index,msra_ner:6 peoples_daily_ner:6 cluener:20  
 num_classes = 21     #num_classes=len(label_list),msra_ner:7 peoples_daily_ner:7 cluener:21  
 #设置最长序列
 max_seq_len=128
@@ -31,6 +30,17 @@ train_batch_size=8
 test_batch_size=32
 
 
+if pretrained == "bert-wwm-ext-chinese":
+    msra_ner_checkpoint = "D:/yunpan/checkpoint/bert-wwm-ext-chinese/msra_model_100000.pdparams"
+    peoples_daily_ner_checkpoint = "D:/yunpan/checkpoint/bert-wwm-ext-chinese/peoples_daily_model_model_140000.pdparams"
+    cluener_checkpoint = "D:/yunpan/checkpoint/bert-wwm-ext-chinese/cluner_model_134300.pdparams"
+else:
+    msra_ner_checkpoint = "D:/yunpan/checkpoint/bert-base-multilingual-uncased、msra_model_22000.pdparams"
+    peoples_daily_ner_checkpoint = "D:/yunpan/bert-base-multilingual-uncased/checkpoint/peoples_daily_model_26080.pdparams"
+    cluener_checkpoint = "D:/yunpan/checkpoint/bert-base-multilingual-uncased/cluener_model_134300.pdparams"
+   
+    
+   
 #cluener 标签
 cluener_label = {"address":"地址","book":"书名","company":"公司","game":"游戏","government":"政府","movie":"电影","name":"姓名","organization":"组织机构","position":"职位","scene":"景点"}
 #cluener数据集路径
