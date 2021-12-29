@@ -108,7 +108,7 @@ class CluenerDataset(Dataset):
 
         
         
-a = CluenerDataset("D:/yunpan/数据集/cluener_public","dev")
+#a = CluenerDataset("D:/yunpan/数据集/cluener_public","dev")
         
         
         
