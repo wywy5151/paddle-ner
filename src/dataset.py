@@ -117,8 +117,8 @@ def transform(texts):
     inputs = []
     types = []
     for i in range(len(split_texts)):
-        inputs.append(input_ids[i]+[0]*(maxlen-seq_len[i]))
-        types.append(token_type_ids[i]+[0]*(maxlen-seq_len[i]))
+        inputs.append([0]+input_ids[i]+[0]*(maxlen-seq_len[i]+3))
+        types.append([0]+token_type_ids[i]+[0]*(maxlen-seq_len[i]+3))
         
     
     return inputs,types,seq_len,split_texts

@@ -1,6 +1,6 @@
 
 #预训练模型
-pretrained = "bert-wwm-ext-chinese"            # bert-base-multilingual-uncased  其他预训练模型可参考：https://paddlenlp.readthedocs.io/zh/latest/model_zoo/transformers.html#transformer
+pretrained = "bert-wwm-ext-chinese"                  # bert-base-multilingual-uncased  其他预训练模型可参考：https://paddlenlp.readthedocs.io/zh/latest/model_zoo/transformers.html#transformer
 #pretrained = "bert-base-multilingual-uncased"
 
 
@@ -18,9 +18,9 @@ save_steps = 10000
 
 
 #数据集
-dataset = "msra_ner"  #msra_ner,peoples_daily_ner,cluener
-no_entity_id = 6    #“O” 在label_list的index,msra_ner:6 peoples_daily_ner:6 cluener:20  
-num_classes =  7     #num_classes=len(label_list),msra_ner:7 peoples_daily_ner:7 cluener:21  
+dataset = "cluener"  #msra_ner,peoples_daily_ner,cluener
+no_entity_id = 20    #“O” 在label_list的index,msra_ner:6 peoples_daily_ner:6 cluener:20  
+num_classes =  21     #num_classes=len(label_list),msra_ner:7 peoples_daily_ner:7 cluener:21  
 
 
 ignore_label = -100

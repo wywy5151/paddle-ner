@@ -60,12 +60,14 @@ def parse(outputs,seq_len,texts):
         begin = 0
         end =   0
         word = ""
-        texts[i] = "0"+texts[i]+"0"
+        texts[i] = "00"+texts[i]+"0"
+        texts[i] = texts[i]
         for j in range(len(texts[i])):
             label.append(id2label[outputs[i][j]])
             if id2label[outputs[i][j]][0]=="B":
                 if word:
                     result.append([word,begin-1,end-1,id2label[outputs[i][j-1]].split("-")[-1]])
+                    word=texts[i][j]
                 else:
                     begin = end = j
                     word=texts[i][j]
