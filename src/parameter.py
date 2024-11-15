@@ -31,7 +31,7 @@ train_batch_size=8
 #测试集 batch_size
 test_batch_size=32
 
-checkpoint_base = "D:/yunpan/checkpoint"
+checkpoint_base = r"/data/nlp/data_origin/model/pretraining_model"
 
 if pretrained == "bert-wwm-ext-chinese":
     msra_ner_checkpoint = checkpoint_base+"/bert-wwm-ext-chinese/msra_model_100000.pdparams"
@@ -46,7 +46,7 @@ else:
 #cluener 标签
 cluener_label = {"address":"地址","book":"书名","company":"公司","game":"游戏","government":"政府","movie":"电影","name":"姓名","organization":"组织机构","position":"职位","scene":"景点"}
 #cluener数据集路径
-cluener_path = "cluener/"
+cluener_path = r"/data/wy/project_python/paddle-ner/cluener"
 
 
 #label list
