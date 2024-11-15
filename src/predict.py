@@ -1,4 +1,3 @@
-
 import paddle
 from paddlenlp.datasets import load_dataset
 from paddlenlp.transformers import BertForTokenClassification
@@ -38,17 +37,21 @@ def load_model(checkpoint_path):
     model_dict = paddle.load(checkpoint_path)
     model.set_dict(model_dict)
     model.eval()
-    
+    print("8888")
     return model
 
 def predict(texts,model):
     
     input_ids,token_type_ids,seq_len,texts = dataset.transform(texts)
+    print("input_ids",input_ids)
     input_ids = paddle.to_tensor(input_ids,dtype="int64")
+    print("input_ids",input_ids)
     token_type_ids = paddle.to_tensor(token_type_ids,dtype="int64")
+    print("token_type_ids",token_type_ids)
     logits = model(input_ids, token_type_ids)
+    print("logits",logits)
     preds = logits.argmax(axis=2)
-    
+    print("7777")
     return preds.numpy(),seq_len,texts
     
 
@@ -86,8 +89,8 @@ def parse(outputs,seq_len,texts):
 if __name__ == "__main__":
     
     checkpoint = {}
-    checkpoint["msra_ner"] = parameter.msra_ner_checkpoint
-    checkpoint["peoples_daily_ner"] = parameter.peoples_daily_ner_checkpoint
+    # checkpoint["msra_ner"] = parameter.msra_ner_checkpoint
+    # checkpoint["peoples_daily_ner"] = parameter.peoples_daily_ner_checkpoint
     checkpoint["cluener"] = parameter.cluener_checkpoint
     
     model = load_model(checkpoint[parameter.dataset])
